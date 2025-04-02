@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jerry Chatbot</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #121212;
+            color: white;
+            text-align: center;
+        }
+        #chatbox {
+            width: 50%;
+            margin: auto;
+            background: #1e1e1e;
+            padding: 20px;
+            border-radius: 10px;
+        }
+        .message {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .bot {
+            color: lightblue;
+            text-align: left;
+            justify-content: flex-start;
+        }
+        .user {
+            color: lightgreen;
+            text-align: right;
+            justify-content: flex-end;
+        }
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin: 0 10px;
+        }
+        .text {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 10px;
+            border-radius: 10px;
+        }
+        input {
+            width: 70%;
+            padding: 10px;
+            border: none;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px;
+            background-color: #0052cc;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>Jerry Chatbot</h1>
+    <img src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Chatbot Logo" width="100"> <!-- Chatbot Image -->
+    
+    <div id="chatbox">
+        <div id="messages"></div>
+        <input type="text" id="user-input" placeholder="Ask your question here..." onkeypress="handleKeyPress(event)">
+        <button onclick="sendMessage()">Send</button>
+    </div>
+
+    <script>
+        function sendMessage() {
+            var userMessage = $("#user-input").val().trim();
+            if (userMessage === "") return;
+
+            $("#messages").append(`
+                <div class="message user">
+                    <div class="text"><strong>You:</strong> ${userMessage}</div>
+                    <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="User Avatar">
+                </div>
+            `);
+            $("#user-input").val("");
+
+            $.ajax({
+                url: "/chat",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ message: userMessage }),
+                success: function(response) {
+                    $("#messages").append(`
+                        <div class="message bot">
+                            <img class="avatar" src="https://cdn-icons-png.flaticon.com/512/4712/4712035.png" alt="Bot Avatar">
+                            <div class="text"><strong>Jerry:</strong> ${response.response}</div>
+                        </div>
+                    `);
+                    speak(response.response);
+                }
+            });
+        }
+
+        function handleKeyPress(event) {
+            if (event.key === "Enter") {
+                sendMessage();
+            }
+        }
+
+        function speak(text) {
+            var speech = new SpeechSynthesisUtterance();
+            speech.text = text;
+            speech.volume = 1;
+            speech.rate = 1;
+            speech.pitch = 1;
+            window.speechSynthesis.speak(speech);
+        }
+    </script>
+
+</body>
+</html>
